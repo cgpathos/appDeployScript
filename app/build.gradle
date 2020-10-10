@@ -21,6 +21,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    // AS 3.0부터 최소 하나의 dimension이 필요해 졌다.
+    flavorDimensions "app"
+
+    productFlavors {
+        dev {
+            applicationIdSuffix ".dev"
+        }
+        stg {
+            applicationIdSuffix ".stg"
+        }
+        prd {
+        }
+    }
 }
 
 dependencies {
