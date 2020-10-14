@@ -18,7 +18,7 @@ def checkProperties() {
 
     if (!project.ext.deploy_path?.trim()) {
         out.withStyle(Style.Info).println "If you want to use copyXXX Tasks, set deploy_path in your local.properties file."
-        project.ext.deploy_path = 0
+        project.ext.deploy_path = ""
     } else {
         out.withStyle(Style.Success).println "local.properties --> deploy_path = $deploy_path"
     }

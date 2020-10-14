@@ -1,0 +1,34 @@
+// apk-copy.gradle
+android {
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            // 배포 모드일때만 task 추가
+            if (deploy_mode_enable.toBoolean()) {
+                def task = project.tasks.create("copy${variant.flavorName.capitalize()}${variant.buildType.name.capitalize()}", Copy)
+                def targetName = "myApp-${variant.versionName}-${variant.buildType.name}.apk"
+                def targetPath = deploy_path ?: rootDir
+
+                // 1. Copy task 생성
+                task.group = "deploy"
+                task.dependsOn = ["assemble${variant.name.capitalize()}"]
+                task.from(output.outputFile)
+
+                // 2. 대상경로로 복사
+                task.into(targetPath)
+
+                // 3. APK 이름 변경
+                task.rename ".*", targetName
+
+                task.doFirst {
+                    println "==============================================="
+                    println "copy from ${source.singleFile.parent} to $destinationDir"
+                }
+
+                task.doLast {
+                    println "APK name : $targetName"
+                    println "==============================================="
+                }
+            }
+        }
+    }
+}
