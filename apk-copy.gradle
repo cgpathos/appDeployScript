@@ -15,6 +15,21 @@ Properties readVersion() {
     return version
 }
 
+task resetDeployNumber {
+    group = "deploy"
+
+    doFirst {
+        def version = readVersion()
+        def stream = new FileOutputStream(versionFile)
+        try {
+            version.clear()
+            version.store(stream, null)
+        } finally {
+            stream.close()
+        }
+    }
+}
+
 android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
