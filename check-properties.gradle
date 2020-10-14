@@ -1,0 +1,43 @@
+import org.gradle.internal.logging.text.StyledTextOutputFactory
+import static org.gradle.internal.logging.text.StyledTextOutput.Style
+
+def checkProperties() {
+    def out = services.get(StyledTextOutputFactory).create("logging")
+//    존재하는 색상값 확인
+//    Style.values().each {
+//        out.withStyle(it).println("This line has the style $it")
+//    }
+
+    println "==============================================="
+
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file("local.properties").newDataInputStream())
+    project.ext.deploy_path = properties.getProperty("deploy_path")
+    project.ext.deploy_mode_enable = properties.getProperty("deploy_mode_enable")
+    project.ext.leak_canary_enable = properties.getProperty("leak_canary_enable")
+
+    if (!project.ext.deploy_path?.trim()) {
+        out.withStyle(Style.Info).println "If you want to use copyXXX Tasks, set deploy_path in your local.properties file."
+        project.ext.deploy_path = 0
+    } else {
+        out.withStyle(Style.Success).println "local.properties --> deploy_path = $deploy_path"
+    }
+
+    if (!project.ext.deploy_mode_enable?.trim()) {
+        out.withStyle(Style.Info).println "If you want to enable QA mode on, set qa_mode_enable is true in your local.properties file."
+        project.ext.qa_mode_enable = false
+    } else {
+        out.withStyle(Style.Success).println "local.properties --> deploy_mode_enable = $deploy_mode_enable"
+    }
+
+    if (!project.ext.leak_canary_enable?.trim()) {
+        out.withStyle(Style.Info).println "If you want to enable Leak Canary mode on, set leak_canary_enable is true in your local.properties file."
+        project.ext.leak_canary_enable = false
+    } else {
+        out.withStyle(Style.Success).println "local.properties --> leak_canary_enable = $leak_canary_enable"
+    }
+
+    println "==============================================="
+}
+
+checkProperties()
