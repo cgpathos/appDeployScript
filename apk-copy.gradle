@@ -1,11 +1,43 @@
-// apk-copy.gradle
+ext {
+    versionFile = new File(project.rootDir, 'version.properties')
+}
+
+Properties readVersion() {
+    def version = new Properties()
+    def stream
+    try {
+        stream = new FileInputStream(versionFile)
+        version.load(stream)
+    } catch (FileNotFoundException ignore) {
+    } finally {
+        if (stream != null) stream.close()
+    }
+    return version
+}
+
 android {
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
+            def version = readVersion()
+
+            // deploy 모드 && debug 모드 일때만 versionName에 추가 정보 붙이기
+            if (variant.buildType.name == buildTypes.debug.name && deploy_mode_enable.toBoolean()) {
+                def deploy_number = 0
+                if(null != version[variant.flavorName]) {
+                    deploy_number = version[variant.flavorName] as int
+                }
+                output.versionNameOverride = "${variant.versionName}.${variant.flavorName}.${deploy_number}"
+
+                // 배포 버젼 업데이트
+                deploy_number++
+                version[variant.flavorName] = deploy_number.toString()
+            }
+
+
             // 배포 모드일때만 task 추가
             if (deploy_mode_enable.toBoolean()) {
                 def task = project.tasks.create("copy${variant.flavorName.capitalize()}${variant.buildType.name.capitalize()}", Copy)
-                def targetName = "myApp-${variant.versionName}-${variant.buildType.name}.apk"
+                def targetName = "myApp-${output.versionNameOverride}-${variant.buildType.name}.apk"
                 def targetPath = deploy_path ?: rootDir
 
                 // 1. Copy task 생성
@@ -25,6 +57,14 @@ android {
                 }
 
                 task.doLast {
+                    // 복사 성공했을때만 버젼정보 파일에 저장
+                    def stream = new FileOutputStream(versionFile)
+                    try {
+                        version.store(stream, null)
+                    } finally {
+                        stream.close()
+                    }
+
                     println "APK name : $targetName"
                     println "==============================================="
                 }
